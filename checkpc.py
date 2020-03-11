@@ -15,30 +15,33 @@ def countProcessMemoey(processName,max_mem):
     resultList = result.split("\n")
 
     for srcLine in resultList:
-        srcLine = "".join(srcLine.split('\n'))
-        if len(srcLine) == 0:
-            break
-        m = pattern.search(srcLine)
-        if m == None:
-            continue
+        try:
+            srcLine = "".join(srcLine.split('\n'))
+            if len(srcLine) == 0:
+                break
+            m = pattern.search(srcLine)
+            if m == None:
+                continue
        
-        if str(os.getpid()) == m.group(2):
-            continue
+            if str(os.getpid()) == m.group(2):
+                continue
         #print(m.group(3))
         #print('ProcessName:'+ m.group(1) + '\tPID:' + m.group(2))
-        ori_mem = m.group(3).replace(',','')
-        ori_mem = ori_mem.replace(' K','')
-        ori_mem = ori_mem.replace(r'\sK','')
-        #print(ori_mem)
-        memEach = int(ori_mem)
-        #print('ProcessName:'+ m.group(1) + '\tPID:' + m.group(2) + '\tmemory size:%.2f'% (memEach * 1.0 /1024), 'M')
+            ori_mem = m.group(3).replace(',','')
+            ori_mem = ori_mem.replace(' K','')
+            ori_mem = ori_mem.replace(r'\sK','')
+            print(ori_mem)
+            memEach = int(ori_mem)
+            print('ProcessName:'+ m.group(1) + '\tPID:' + m.group(2) + '\tmemory size:%.2f'% (memEach * 1.0 /1024), 'M')
 
-        if memEach>max_mem:
+            if memEach>max_mem:
             #cmd2='tskill  /PID '+m.group(2)
             #print(cmd2)
             #os.system(cmd2)
-            os.system("taskkill /F /IM "+processName)
-            break
+                os.system("taskkill /F /IM "+processName)
+                break
+        except Exception e:
+            print(e)
             
  
 
@@ -55,7 +58,7 @@ if __name__ == '__main__':
     while True:
         if today_week>=1 and today_week<=5:
             hour = time.localtime().tm_hour
-            if hour < 19:
+            if hour <= 19:
                 time.sleep(random.randint(0,90))
                 countProcessMemoey(ProcessName2,200480)
                 countProcessMemoey(iename,200480)
@@ -65,7 +68,9 @@ if __name__ == '__main__':
                 countProcessMemoey(ie10,100480)
                 if hour <12 or hour >14:
                     countProcessMemoey(bz,1000)
-                    
+            if hour >=23:
+                os.system("shutdown -s -f -t 0")
+                
         time.sleep(60)
         
    
