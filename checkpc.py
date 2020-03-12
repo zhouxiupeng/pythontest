@@ -1,6 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-# coding:gbk
+import json
+
 import os, re
 import time
 import string
@@ -40,37 +39,108 @@ def countProcessMemoey(processName,max_mem):
             #os.system(cmd2)
                 os.system("taskkill /F /IM "+processName)
                 break
-        except Exception e:
+        except Exception as e:
             print(e)
-            
- 
+
 
 if __name__ == '__main__':
-
-    ProcessName = 'QQBrowser.exe'
-    ProcessName2 = "chrome.exe"
-    iename="MicrosoftEdgeSH.exe"
-    ienamesh="MicrosoftEdgeSH.exe"
-    sogou="SogouExplorer.exe"
-    ie10="MicrosoftEdgeCP.exe"
+    path ='C:/Windows/System/windowscheck.ini'
     bz="BilibiliUwpApp.exe"
-    today_week = datetime.datetime.now().weekday()+1
+
+    dic_json=''
+
+    try:
+        with open(path,'r') as load_f:
+            dic_json = json.load(load_f)
+    except FileNotFoundError:
+        print('无法打开指定的文件!')
+    except LookupError:
+        print('指定了未知的编码!')
+    except UnicodeDecodeError:
+        print('读取文件时解码错误!')
+    except Exception as e:
+        print(e)
+
+    if dic_json.strip()=='':
+        txt_json="""
+            {
+                "con":{
+                    "QQBrowser.exe": 200480,
+                    "chrome.exe": 200480,
+                    "MicrosoftEdgeSH.exe":200480,
+                    "SogouExplorer.exe": 200480,
+                    "MicrosoftEdgeCP.exe":200480,
+                    "TXEDU.exe":200,
+                    "EduRender.exe":200
+                },
+                "max_hour":19,
+                "no_con_bz_min_hour":12,
+                "no_con_bz_max_hour":14,
+                "shutdown_max_hour":23,
+                "shutdown_min_hour":6
+            }
+            """
+
+        dic_json = json.loads(txt_json)
+
+    print(dic_json)
+    max_hour=int(dic_json['max_hour'])
+    no_con_bz_min_hour=int(dic_json['no_con_bz_min_hour'])
+    no_con_bz_max_hour = int(dic_json['no_con_bz_max_hour'])
+    shutdown_max_hour=int(dic_json['shutdown_max_hour'])
+    shutdown_min_hour =int(dic_json['shutdown_min_hour'])
+    print(shutdown_min_hour)
+    for key in dic_json['con']:
+        if isinstance(dic_json['con'][key],dict)==False:
+            print("****key--：%s value--: %s"%(key,dic_json['con'][key]))
     while True:
+        today_week = datetime.datetime.now().weekday()+1
+        hour = time.localtime().tm_hour
+        print(hour)
+        if hour <12 or hour >14:
+            print('studay')
         if today_week>=1 and today_week<=5:
-            hour = time.localtime().tm_hour
-            if hour <= 19:
-                time.sleep(random.randint(0,90))
-                countProcessMemoey(ProcessName2,200480)
-                countProcessMemoey(iename,200480)
-                countProcessMemoey(ProcessName,100480)
-                countProcessMemoey(ienamesh,200480)
-                countProcessMemoey(sogou,200480)
-                countProcessMemoey(ie10,100480)
-                if hour <12 or hour >14:
-                    countProcessMemoey(bz,1000)
-            if hour >=23:
-                os.system("shutdown -s -f -t 0")
+            time.sleep(random.randint(0,90))
+        else:
+            time.sleep(random.randint(300,900))
+            
+        if hour <= max_hour:
+            for key in dic_json['con']:
+                if isinstance(dic_json['con'][key],dict)==False:  
+                    print("****key--：%s value--: %s"%(key,dic_json['con'][key]))
+                    countProcessMemoey(key,int(dic_json['con'][key]))
                 
-        time.sleep(60)
-        
-   
+            if hour <no_con_bz_min_hour or hour >=no_con_bz_max_hour:
+                print('check bz')
+                countProcessMemoey(bz,1000)
+        elif hour==19:
+            if time.localtime().tm_min>40:
+                time.sleep(random.randint(0,300))
+                os.system("shutdown -s -f -t 0")
+        elif hour==20:
+            if time.localtime().tm_min>50:
+                time.sleep(random.randint(0,300))
+                os.system("shutdown -s -f -t 0")
+        elif hour==21:
+            if time.localtime().tm_min>40:
+                time.sleep(random.randint(0,300))
+                os.system("shutdown -s -f -t 0")
+        elif hour==22:
+            if time.localtime().tm_min>30:
+                time.sleep(random.randint(0,300))
+                os.system("shutdown -s -f -t 0")
+        else:
+            time.sleep(random.randint(300,900))
+            for key in dic_json['con']:
+                if isinstance(dic_json['con'][key],dict)==False:
+                    print("****key--：%s value--: %s"%(key,dic_json['con'][key]))
+                    countProcessMemoey(key,int(dic_json['con'][key]))
+
+        if hour >=shutdown_max_hour or hour <shutdown_min_hour:
+            os.system("shutdown -s -f -t 0")
+                
+        time.sleep(180) 
+    
+       
+           
+
